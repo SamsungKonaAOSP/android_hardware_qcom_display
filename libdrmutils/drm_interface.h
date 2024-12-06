@@ -417,6 +417,12 @@ enum struct DRMOps {
    *      uint32_t - colorspace value bit-mask
    */
   CONNECTOR_SET_COLORSPACE,
+  /*
+   * Op: Sets fingerprint mode on this connector
+   * Arg: uint32_t - Connector ID
+   *      uint32_t - fingerprint mode
+   */
+  CONNECTOR_SET_FINGERPRINT_MASK,
 };
 
 enum struct DRMRotation {

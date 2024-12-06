@@ -1053,6 +1053,15 @@ DisplayError HWDeviceDRM::PowerOff(bool teardown) {
     return kErrorNone;
   }
 
+  if (IsPrimaryDisplay()) {
+    if (current_mask_state_) {
+      current_mask_state_ = false;
+      drm_atomic_intf_->Perform(DRMOps::CONNECTOR_SET_FINGERPRINT_MASK, token_.conn_id, current_mask_state_);
+      DLOGI("Display:%d Setting Fingerprint Indisplay Layer property  = %u",
+             display_id_, current_mask_state_);
+    }
+  }
+
   ResetROI();
   int64_t retire_fence_fd = -1;
   drmModeModeInfo current_mode = connector_info_.modes[current_mode_index_].mode;
@@ -1477,6 +1486,27 @@ void HWDeviceDRM::SetupAtomic(Fence::ScopedRef &scoped_ref, HWLayers *hw_layers,
   if (hw_panel_info_.mode == kModeCommand) {
     drm_atomic_intf_->Perform(DRMOps::CONNECTOR_SET_AUTOREFRESH, token_.conn_id, autorefresh_);
   }
+
+  if (IsPrimaryDisplay()) {
+    bool mask_state_ = false;
+
+    for (uint32_t i = 0; i < hw_layer_count; i++) {
+        Layer &layer = hw_layer_info.hw_layers.at(i);
+        if (layer.flags.fod_pressed ||
+            (hw_layer_info.stack->flags.fod_pressed_present && i == hw_layer_count - 1)) {
+            mask_state_ = true;
+            goto out;
+        }
+    }
+
+out:
+    if (current_mask_state_ != mask_state_) {
+        current_mask_state_ = mask_state_;
+        drm_atomic_intf_->Perform(DRMOps::CONNECTOR_SET_FINGERPRINT_MASK, token_.conn_id, current_mask_state_);
+        DLOGI("Display:%d Setting Fingerprint Indisplay Layer property = %u", display_id_, current_mask_state_);
+    }
+}
+
 }
 
 void HWDeviceDRM::AddSolidfillStage(const HWSolidfillStage &sf, uint32_t plane_alpha) {
