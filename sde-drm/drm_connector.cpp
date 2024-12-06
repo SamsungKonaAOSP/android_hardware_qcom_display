@@ -968,6 +968,21 @@ void DRMConnector::Perform(DRMOps code, drmModeAtomicReq *req, va_list args) {
       }
     } break;
 
+    case DRMOps::CONNECTOR_SET_FINGERPRINT_MASK: {
+      if (!prop_mgr_.IsPropertyAvailable(DRMProperty::FINGERPRINT_MASK)) {
+        return;
+      }
+      uint32_t fingerprint_mask = va_arg(args, uint32_t);
+      int ret = drmModeAtomicAddProperty(req, obj_id, prop_mgr_.GetPropertyId(DRMProperty::FINGERPRINT_MASK),
+                               fingerprint_mask);
+        if (ret < 0) {
+          DRM_LOGE("DRMConnector::%s: Connector %d : Fingerprint Property is not available",
+                   __FUNCTION__, obj_id);
+        } else {
+          DRM_LOGD("Connector %d: Setting Fingerprint mode %d", obj_id, fingerprint_mask);
+        }
+    } break;
+
     default:
       DRM_LOGE("Invalid opcode %d to set on connector %d", code, obj_id);
       break;
