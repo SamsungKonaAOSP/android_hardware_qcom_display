@@ -1054,10 +1054,9 @@ DisplayError HWDeviceDRM::PowerOff(bool teardown) {
   }
 
   if (IsPrimaryDisplay()) {
-    drm_atomic_intf_->Perform(DRMOps::CONNECTOR_SET_FINGERPRINT_MASK, token_.crtc_id,
-                              0);
+    drm_atomic_intf_->Perform(DRMOps::CONNECTOR_SET_FINGERPRINT_MASK, token_.conn_id, 0);
     DLOGI_IF(kTagDriverConfig, "HWDeviceDRM::%s: Display:%d Setting Fingerprint Indisplay Layer property  = %u",
-             __FUNCTION__, display_id_ var, 0);
+             __FUNCTION__, display_id_, 0);
   }
 
   ResetROI();
@@ -1486,15 +1485,15 @@ void HWDeviceDRM::SetupAtomic(Fence::ScopedRef &scoped_ref, HWLayers *hw_layers,
   }
 
   if (IsPrimaryDisplay()) {
-    if (layer.flags.fod_pressed
-      || (hw_layer_info.stack->flags.fod_pressed_present
-        && i == hw_layer_count - 1)) {
-          uint32_t mask_toggle = 1;
+// To-Do: We have to utilize dim layer zorder in here
+    if (layer.flags.fod_pressed || (hw_layer_info.stack->flags.fod_pressed_present
+                && i == hw_layer_count - 1)) {
+           mask_toggle = 1;
     }
     else {
-          uint32_t mask_toggle = 0;
+           mask_toggle = 0;
     }
-    drm_atomic_intf_->Perform(DRMOps::CONNECTOR_SET_FINGERPRINT_MASK, token_.crtc_id, mask_toggle);
+    drm_atomic_intf_->Perform(DRMOps::CONNECTOR_SET_FINGERPRINT_MASK, token_.conn_id, mask_toggle);
     DLOGI_IF(kTagDriverConfig, "HWDeviceDRM::%s: Display:%d Setting Fingerprint Indisplay Layer property  = %u",
              __FUNCTION__, display_id_, mask_toggle);
   }
